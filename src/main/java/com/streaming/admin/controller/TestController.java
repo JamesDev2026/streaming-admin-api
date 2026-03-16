@@ -8,6 +8,7 @@ public class TestController {
 
     @GetMapping("/test")
     public String test() {
+        System.out.println("Testing the backend by James");
         return "Backend funcionando correctamente";
     }
 
