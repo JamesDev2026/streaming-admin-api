@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "Category")
+@Table(name = "Category", schema = "dbo")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
