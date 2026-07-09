@@ -41,11 +41,11 @@ public class AccountSubscriptionService {
     }
 
     // Deactivate subscriptions
-    public void deactivate(Integer id) {
+    public AccountSubscription deactivate(Integer id) {
         AccountSubscription subscription = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
         subscription.setIsActive(false);
-        repository.save(subscription);
+        return repository.save(subscription);
     }
 }
