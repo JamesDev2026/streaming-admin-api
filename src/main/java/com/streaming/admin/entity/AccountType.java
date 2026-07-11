@@ -18,6 +18,6 @@ public class AccountType {
     @Column(nullable = false, length = 45)
     private String name;
 
-    @Column(length = 45)
+    @Column(length = 990)
     private String description;
 }
