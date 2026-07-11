@@ -18,4 +18,6 @@ public interface AccountSubscriptionRepository extends JpaRepository<AccountSubs
     // Count active users in an account (for limit of 3)
     long countByIdAccountAndIsActiveTrue(Integer idAccount);
 
+    boolean existsByIdAppUser(Integer idAppUser);
+
 }

@@ -18,9 +18,9 @@ public class Panel {
     @Column(nullable = false, length = 45)
     private String name;
 
-    @Column(length = 100)
+    @Column(length = 2000)
     private String url;
 
-    @Column(length = 45)
+    @Column(length = 990)
     private String description;
 }

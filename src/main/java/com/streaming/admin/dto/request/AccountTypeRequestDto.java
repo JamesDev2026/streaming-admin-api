@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryRequestDto {
+public class AccountTypeRequestDto {
 
     @NotBlank(message = "Name is required")
     @Size(max = 45)

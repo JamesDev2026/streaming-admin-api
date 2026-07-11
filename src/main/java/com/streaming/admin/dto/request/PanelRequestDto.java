@@ -11,11 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryRequestDto {
+public class PanelRequestDto {
 
     @NotBlank(message = "Name is required")
     @Size(max = 45)
     private String name;
+
+    @Size(max = 2000)
+    private String url;
 
     @Size(max = 990)
     private String description;
