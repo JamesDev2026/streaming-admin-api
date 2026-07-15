@@ -1,5 +1,6 @@
-package com.streaming.admin.dto.response;
+package com.streaming.admin.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,10 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CountActiveUsersResponseDto {
+public class ChangeAccountRequestDto {
 
+    @NotNull(message = "New account is required")
     private Integer idAccount;
-    private long activeUsersCount;
-    private Integer maxUsers;
-    private Integer availableSlots;
 }
