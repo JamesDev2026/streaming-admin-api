@@ -36,6 +36,6 @@ public class AccountSubscription {
     @Column(nullable = false)
     private Boolean isActive;
 
-    @Column(length = 900)
+    @Column(length = 990)
     private String description;
 }
