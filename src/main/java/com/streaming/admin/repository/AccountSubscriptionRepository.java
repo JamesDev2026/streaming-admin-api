@@ -20,4 +20,6 @@ public interface AccountSubscriptionRepository extends JpaRepository<AccountSubs
 
     boolean existsByIdAppUser(Integer idAppUser);
 
+    boolean existsByIdAccount(Integer idAccount);
+
 }

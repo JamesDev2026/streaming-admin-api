@@ -24,7 +24,7 @@ public class Account {
     @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(length = 45)
+    @Column(length = 2000)
     private String description;
 
     private java.time.LocalDateTime purchaseDate;
