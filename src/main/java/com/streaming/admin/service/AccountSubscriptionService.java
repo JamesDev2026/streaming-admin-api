@@ -2,6 +2,7 @@ package com.streaming.admin.service;
 
 import com.streaming.admin.dto.request.AccountSubscriptionRequestDto;
 import com.streaming.admin.dto.request.ChangeAccountRequestDto;
+import com.streaming.admin.dto.request.RenewSubscriptionRequestDto;
 import com.streaming.admin.dto.request.UpdatePaymentStatusRequestDto;
 import com.streaming.admin.dto.response.CountActiveUsersResponseDto;
 import com.streaming.admin.entity.Account;
@@ -10,6 +11,7 @@ import com.streaming.admin.repository.AccountRepository;
 import com.streaming.admin.repository.AccountSubscriptionRepository;
 import com.streaming.admin.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -176,6 +178,49 @@ public class AccountSubscriptionService {
         AccountSubscription subscription = findById(id);
         subscription.setIsActive(false);
         return subscriptionRepository.save(subscription);
+    }
+
+    /**
+     * Closes the current active period (isActive=false) and creates a new active subscription
+     * so the previous one remains as client history.
+     */
+    @Transactional
+    public AccountSubscription renew(Integer id, RenewSubscriptionRequestDto request) {
+        AccountSubscription current = findById(id);
+
+        if (!Boolean.TRUE.equals(current.getIsActive())) {
+            throw new RuntimeException("Only an active subscription can be renewed");
+        }
+
+        validateAccountExists(request.getIdAccount());
+        validatePaymentStatus(request.getPaymentStatus());
+
+        Integer clientId = current.getIdAppUser();
+        boolean sameAccount = request.getIdAccount().equals(current.getIdAccount());
+
+        current.setIsActive(false);
+        subscriptionRepository.saveAndFlush(current);
+
+        if (!sameAccount) {
+            validateNoDuplicateActiveAssignment(request.getIdAccount(), clientId);
+            validateAvailableSlot(request.getIdAccount());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        AccountSubscription renewed = AccountSubscription.builder()
+                .idAccount(request.getIdAccount())
+                .idAppUser(clientId)
+                .amountPaid(request.getAmountPaid())
+                .expirationDate(request.getExpirationDate())
+                .paymentStatus(normalizePaymentStatus(request.getPaymentStatus()))
+                .startDate(request.getStartDate() != null ? request.getStartDate() : now)
+                .paymentDate(request.getPaymentDate() != null ? request.getPaymentDate() : now)
+                .isActive(true)
+                .description(request.getDescription())
+                .build();
+
+        return subscriptionRepository.save(renewed);
     }
 
     public void delete(Integer id) {

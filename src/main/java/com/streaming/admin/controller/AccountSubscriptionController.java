@@ -2,6 +2,7 @@ package com.streaming.admin.controller;
 
 import com.streaming.admin.dto.request.AccountSubscriptionRequestDto;
 import com.streaming.admin.dto.request.ChangeAccountRequestDto;
+import com.streaming.admin.dto.request.RenewSubscriptionRequestDto;
 import com.streaming.admin.dto.request.UpdatePaymentStatusRequestDto;
 import com.streaming.admin.dto.response.AccountSubscriptionResponseDto;
 import com.streaming.admin.dto.response.CountActiveUsersResponseDto;
@@ -152,6 +153,20 @@ public class AccountSubscriptionController {
             @PathVariable Integer id
     ) {
         return DeactivateSubscriptionResponseDto.fromEntity(service.deactivate(id));
+    }
+
+    @Operation(summary = "Renew a subscription: deactivate current period and create a new active one (keeps history)")
+    @PostMapping("/{id}/renew")
+    public AccountSubscriptionResponseDto renew(
+            @Parameter(description = "ID of the active subscription to renew", example = "5")
+            @PathVariable Integer id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "New subscription period data (client is taken from the current subscription)",
+                    required = true
+            )
+            @Valid @RequestBody RenewSubscriptionRequestDto request
+    ) {
+        return AccountSubscriptionResponseDto.fromEntity(service.renew(id, request));
     }
 
     @Operation(summary = "Delete a subscription permanently")
