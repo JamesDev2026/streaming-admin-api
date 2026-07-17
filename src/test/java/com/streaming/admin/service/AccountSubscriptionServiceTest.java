@@ -2,6 +2,7 @@ package com.streaming.admin.service;
 
 import com.streaming.admin.dto.request.AccountSubscriptionRequestDto;
 import com.streaming.admin.dto.request.ChangeAccountRequestDto;
+import com.streaming.admin.dto.request.RenewSubscriptionRequestDto;
 import com.streaming.admin.dto.request.UpdatePaymentStatusRequestDto;
 import com.streaming.admin.dto.response.CountActiveUsersResponseDto;
 import com.streaming.admin.entity.Account;
@@ -180,6 +181,68 @@ class AccountSubscriptionServiceTest {
         AccountSubscription result = service.deactivate(5);
 
         assertFalse(result.getIsActive());
+    }
+
+    @Test
+    void renew_whenActive_deactivatesCurrentAndCreatesNew() {
+        AccountSubscription current = AccountSubscription.builder()
+                .idAccountDetail(5)
+                .idAccount(1)
+                .idAppUser(10)
+                .isActive(true)
+                .amountPaid(new BigDecimal("20.00"))
+                .expirationDate(LocalDateTime.now().minusDays(1))
+                .paymentStatus("Pagado")
+                .build();
+
+        when(subscriptionRepository.findById(5)).thenReturn(Optional.of(current));
+        when(accountRepository.existsById(1)).thenReturn(true);
+        when(subscriptionRepository.saveAndFlush(any(AccountSubscription.class))).thenAnswer(invocation -> {
+            AccountSubscription saved = invocation.getArgument(0);
+            assertFalse(saved.getIsActive());
+            return saved;
+        });
+        when(subscriptionRepository.save(any(AccountSubscription.class))).thenAnswer(invocation -> {
+            AccountSubscription saved = invocation.getArgument(0);
+            saved.setIdAccountDetail(99);
+            return saved;
+        });
+
+        RenewSubscriptionRequestDto request = RenewSubscriptionRequestDto.builder()
+                .idAccount(1)
+                .amountPaid(new BigDecimal("30.00"))
+                .expirationDate(LocalDateTime.now().plusMonths(1))
+                .paymentStatus("Pendiente")
+                .description("Renovacion")
+                .build();
+
+        AccountSubscription result = service.renew(5, request);
+
+        assertEquals(99, result.getIdAccountDetail());
+        assertEquals(10, result.getIdAppUser());
+        assertEquals(1, result.getIdAccount());
+        assertTrue(result.getIsActive());
+        assertEquals("Pendiente", result.getPaymentStatus());
+        assertEquals(new BigDecimal("30.00"), result.getAmountPaid());
+        verify(subscriptionRepository).saveAndFlush(current);
+    }
+
+    @Test
+    void renew_whenInactive_throwsException() {
+        when(subscriptionRepository.findById(5)).thenReturn(Optional.of(
+                AccountSubscription.builder().idAccountDetail(5).isActive(false).build()
+        ));
+
+        RenewSubscriptionRequestDto request = RenewSubscriptionRequestDto.builder()
+                .idAccount(1)
+                .amountPaid(new BigDecimal("30.00"))
+                .expirationDate(LocalDateTime.now().plusMonths(1))
+                .paymentStatus("Pendiente")
+                .build();
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> service.renew(5, request));
+        assertTrue(ex.getMessage().contains("Only an active subscription"));
+        verify(subscriptionRepository, never()).save(any());
     }
 
     @Test
